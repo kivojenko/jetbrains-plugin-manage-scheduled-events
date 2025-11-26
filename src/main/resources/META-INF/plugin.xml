@@ -1,0 +1,34 @@
+<idea-plugin>
+    <id>com.kivojenko.plugin.scheduled.manage-scheduled-plugin</id>
+
+    <name>Manage Scheduled Tasks</name>
+    <vendor email="kivojenko@gmail.com">Ksenija Kivojenko</vendor>
+
+    <description><![CDATA[
+        An IntelliJ Platform plugin that discovers and lists methods annotated with @Scheduled in Java/Spring projects. 
+        It provides a "Scheduled Tasks" tool window to browse tasks, view cron expressions, and navigate to source, 
+        with search, expand/collapse, and grouping by package or class.
+    ]]></description>
+
+    <change-notes>
+        <![CDATA[
+        <ul>
+            <li>1.0.0: Initial release</li>
+        </ul>
+        ]]>
+    </change-notes>
+
+    <idea-version since-build="231"/>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="com.kivojenko.plugin.manage_scheduled_tasks.service.ListPanelService"/>
+
+        <toolWindow id="Scheduled Tasks"
+                    factoryClass="com.kivojenko.plugin.manage_scheduled_tasks.ScheduledTasksToolWindowFactory"
+                    anchor="right"/>
+    </extensions>
+</idea-plugin>
