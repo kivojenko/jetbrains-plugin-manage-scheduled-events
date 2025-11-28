@@ -13,7 +13,7 @@ An IntelliJ Platform plugin that helps you discover and browse methods annotated
 
 ## Compatibility
 
-- Plugin id: `com.kivojenko.plugin.manage_scheduled_tasks`
+- Plugin id: `com.kivojenko.plugin.manage_scheduled_events`
 - Since-build: 231+
 - Target IDE for development: IntelliJ IDEA Ultimate 2025.2.3
 - Requires bundled plugins: Java

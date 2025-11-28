@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>com.kivojenko.plugin.scheduled.manage-scheduled-plugin</id>
+    <id>com.kivojenko.plugin.manage-scheduled-events</id>
 
-    <name>Manage Scheduled Tasks</name>
+    <name>Manage Scheduled Events</name>
     <vendor email="kivojenko@gmail.com">Ksenija Kivojenko</vendor>
 
     <description><![CDATA[
@@ -25,10 +25,10 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="com.kivojenko.plugin.manage_scheduled_tasks.service.ListPanelService"/>
-
         <toolWindow id="Scheduled Tasks"
-                    factoryClass="com.kivojenko.plugin.manage_scheduled_tasks.ScheduledTasksToolWindowFactory"
-                    anchor="right"/>
+                    factoryClass="com.kivojenko.plugin.manage_scheduled_events.ScheduledEventsToolWindowFactory"
+                    anchor="right"
+                    icon="com.intellij.java.ultimate.icons.JavaUltimateIcons.Cdi.Gutter.ScheduledEventRun"
+        />
     </extensions>
 </idea-plugin>

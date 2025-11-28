@@ -1,0 +1,24 @@
+package com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.action;
+
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
+
+public class NavigateToEnabledAction extends AnAction {
+    public NavigateToEnabledAction(Supplier<String> text) {
+        super(text, AllIcons.Actions.MoveToWindow);
+    }
+
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+        var enable = ScheduledEventsTree.getInstance(e).getEnableScheduling();
+        if (enable.isEmpty()) {
+            return;
+        }
+        enable.get().navigate(true);
+    }
+}
