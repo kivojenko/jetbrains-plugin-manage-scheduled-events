@@ -6,7 +6,7 @@
 
     <description><![CDATA[
         An IntelliJ Platform plugin that discovers and lists methods annotated with @Scheduled in Java/Spring projects. 
-        It provides a "Scheduled Tasks" tool window to browse tasks, view cron expressions, and navigate to source, 
+        It provides a "Scheduled Events" tool window to browse events, view cron expressions, and navigate to source,
         with search, expand/collapse, and grouping by package or class.
     ]]></description>
 
@@ -25,7 +25,7 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Scheduled Tasks"
+        <toolWindow id="Scheduled Events"
                     factoryClass="com.kivojenko.plugin.manage_scheduled_events.ScheduledEventsToolWindowFactory"
                     anchor="right"
                     icon="com.intellij.java.ultimate.icons.JavaUltimateIcons.Cdi.Gutter.ScheduledEventRun"
