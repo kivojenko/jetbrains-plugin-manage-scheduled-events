@@ -12,7 +12,7 @@ public class MondayService {
         System.out.println("Is it Monday?");
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void itIsNotMonday() {
         System.out.println("It is not Monday");
     }

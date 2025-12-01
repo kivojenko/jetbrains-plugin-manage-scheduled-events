@@ -9,7 +9,7 @@ import java.awt.*;
 
 public abstract class ScheduledButton<A extends AnAction> extends ActionButton {
     public ScheduledButton(@NotNull A action) {
-        super(action, action.getTemplatePresentation(), ActionPlaces.UNKNOWN, getDimension());
+        super(action, action.getTemplatePresentation().clone(), ActionPlaces.UNKNOWN, getDimension());
     }
 
     public static Dimension getDimension() {

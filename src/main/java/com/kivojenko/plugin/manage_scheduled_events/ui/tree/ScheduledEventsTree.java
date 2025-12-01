@@ -8,12 +8,12 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.kivojenko.plugin.manage_scheduled_events.service.ScheduledService;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.ScheduledMethod;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node.MethodNode;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node.tree.ComplexScheduledTreeNode;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node.tree.SimpleScheduledTreeNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.ComplexScheduledTreeNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.SimpleScheduledTreeNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.DefaultTreeModel;
@@ -30,8 +30,8 @@ public final class ScheduledEventsTree extends SimpleTree {
     private final ScheduledService scheduledService;
 
     private Optional<PsiClass> enableScheduling = Optional.empty();
-    private List<ScheduledMethod> methods = new ArrayList<>();
-    private boolean groupByPackage = true;
+    private List<MethodNode> methods = new ArrayList<>();
+    private boolean groupByPackage = false;
 
     public ScheduledEventsTree(Project project) {
         super();
@@ -53,9 +53,7 @@ public final class ScheduledEventsTree extends SimpleTree {
                 }
             }
         });
-
     }
-
 
     private void navigateOnDoubleClick(MouseEvent e) {
         var path = getPathForLocation(e.getX(), e.getY());
@@ -64,18 +62,19 @@ public final class ScheduledEventsTree extends SimpleTree {
         var nodeObj = path.getLastPathComponent();
         if (!(nodeObj instanceof MethodNode node)) return;
 
-        PsiMethod method = node.getPsiMethod();
+        PsiMethod method = node.getMethod();
         if (method == null || !method.isValid() || !method.canNavigate()) return;
 
         method.navigate(true);
     }
 
+    @SneakyThrows
     public void refreshList() {
         setEnableScheduling(scheduledService.findEnableScheduling());
         setMethods(scheduledService.findScheduledMethods());
     }
 
-    public void setMethods(List<ScheduledMethod> methods) {
+    public void setMethods(List<MethodNode> methods) {
         this.methods = methods;
         refreshTreeModel();
     }

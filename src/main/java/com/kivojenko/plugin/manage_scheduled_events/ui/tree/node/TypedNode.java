@@ -1,4 +1,4 @@
-package com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node;
+package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
 import lombok.Getter;
 

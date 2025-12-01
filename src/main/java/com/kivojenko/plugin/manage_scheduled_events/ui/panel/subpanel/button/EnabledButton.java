@@ -12,8 +12,8 @@ import java.awt.*;
 public class EnabledButton extends ActionButtonWithText {
     private final ScheduledEventsTree scheduledEventsTree;
 
-    public EnabledButton(@NotNull NavigateToEnabledAction action, ScheduledEventsTree  scheduledEventsTree) {
-        super(action, action.getTemplatePresentation(), ActionPlaces.UNKNOWN, getDimension());
+    public EnabledButton(@NotNull NavigateToEnabledAction action, ScheduledEventsTree scheduledEventsTree) {
+        super(action, action.getTemplatePresentation().clone(), ActionPlaces.UNKNOWN, getDimension());
         this.scheduledEventsTree = scheduledEventsTree;
     }
 

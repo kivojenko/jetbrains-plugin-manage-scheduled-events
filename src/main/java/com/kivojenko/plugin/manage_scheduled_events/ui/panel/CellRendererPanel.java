@@ -4,8 +4,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node.MethodNode;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.model.node.TypedNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.TypedNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,24 +23,31 @@ public class CellRendererPanel extends JBPanel<CellRendererPanel> {
         cronLabel.withBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
 
         add(nameLabel, BorderLayout.WEST);
-        add(descriptionLabel, BorderLayout.CENTER);
-        add(cronLabel, BorderLayout.EAST);
+
+        JBPanel<?> rightPanel = new JBPanel<>(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        rightPanel.add(descriptionLabel);
+        rightPanel.add(cronLabel);
+        rightPanel.setOpaque(false);
+
+        add(rightPanel, BorderLayout.CENTER);
     }
 
     public void setNode(TypedNode node) {
-        Icon icon = switch (node.getType()) {
-            case FOLDER -> AllIcons.Nodes.Folder;
-            case PACKAGE -> AllIcons.Nodes.Package;
-            case CLASS -> AllIcons.Nodes.Class;
-            case METHOD -> AllIcons.Nodes.Method;
-        };
+        nameLabel.setIcon(
+                switch (node.getType()) {
+                    case FOLDER -> AllIcons.Nodes.Folder;
+                    case PACKAGE -> AllIcons.Nodes.Package;
+                    case CLASS -> AllIcons.Nodes.Class;
+                    case METHOD -> AllIcons.Nodes.Method;
+                }
+        );
 
-        nameLabel.setIcon(icon);
+        if (node instanceof MethodNode methodNode) {
+            nameLabel.setText(methodNode.getName());
+            descriptionLabel.setText(methodNode.getCronDescription());
+            descriptionLabel.setForeground(methodNode.isValid() ? JBColor.BLUE : JBColor.RED);
+            cronLabel.setText(methodNode.getCron());
 
-        if (node instanceof MethodNode mn) {
-            nameLabel.setText(mn.getMethodName());
-            descriptionLabel.setText(mn.getCronDescription());
-            cronLabel.setText(mn.getCron());
         } else {
             nameLabel.setText(node.getUserObject().toString());
             descriptionLabel.setText("");
@@ -55,5 +62,4 @@ public class CellRendererPanel extends JBPanel<CellRendererPanel> {
         descriptionLabel.setText("");
         cronLabel.setText("");
     }
-
 }

@@ -27,7 +27,7 @@ public class ToolPanel extends JBPanel<ToolPanel> {
             service.refreshList();
 
             var switchButton = new SwitchGroupingButton();
-            ((SwitchGroupingAction) switchButton.getAction()).setSelected(null, true);
+            ((SwitchGroupingAction) switchButton.getAction()).setSelected(null, false);
             leftPanel.add(switchButton, BorderLayout.CENTER);
 
             Supplier<String> text = () -> service.getEnableScheduling()
