@@ -5,20 +5,32 @@
     <vendor email="kivojenko@gmail.com">Ksenija Kivojenko</vendor>
 
     <description><![CDATA[
-        An IntelliJ Platform plugin that discovers and lists methods annotated with @Scheduled in Java/Spring projects. 
-        It provides a "Scheduled Events" tool window to browse events, view cron expressions, and navigate to source,
-        with search, expand/collapse, and grouping by package or class.
+        <p>An IntelliJ Platform plugin that discovers and lists methods annotated with <code>@Scheduled</code> in Java/Spring projects.</p>
+        <p>It provides a "Scheduled Events" tool window to browse events, view cron expressions, and navigate to source, with:</p>
+        <ul>
+            <li>Search</li>
+            <li>Grouping by package or by class</li>
+            <li>Direct Cron validation and update</li>
+            <li>Optional ShedLock helpers: add/remove <code>@SchedulerLock</code> to all listed methods when ShedLock is present</li>
+        </ul>
+
+        <p>ShedLock ensures that scheduled tasks run on a single node in clustered environments. When enabled, this plugin can add
+           <code>@SchedulerLock(name = "ClassName_methodNameLock")</code> right after <code>@Scheduled</code>, and will manage imports for
+           <code>net.javacrumbs.shedlock.spring.annotation.SchedulerLock</code>. You can later tweak parameters like
+           <code>lockAtLeastFor</code> / <code>lockAtMostFor</code> as needed. Learn more at
+           <a href="https://github.com/lukas-krecan/ShedLock">ShedLock</a>.
+        </p>
     ]]></description>
 
     <change-notes>
         <![CDATA[
         <ul>
-            <li>1.0.0: Initial release</li>
+            <li>1.0.0: Initial release (browse and navigate <code>@Scheduled</code> methods; search; grouping; expand/collapse) ShedLock support (toolbar actions to add/remove <code>@SchedulerLock</code>; quick navigation to enable ShedLock)</li>
         </ul>
         ]]>
     </change-notes>
 
-    <idea-version since-build="231"/>
+    <idea-version since-build="242"/>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>

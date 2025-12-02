@@ -1,6 +1,6 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree;
 
-import com.kivojenko.plugin.manage_scheduled_events.ui.panel.CellRendererPanel;
+import com.kivojenko.plugin.manage_scheduled_events.ui.panel.cell.CellRendererPanel;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.TypedNode;
 
 import javax.swing.*;

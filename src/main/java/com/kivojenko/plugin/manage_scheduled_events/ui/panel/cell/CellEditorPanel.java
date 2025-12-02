@@ -1,4 +1,4 @@
-package com.kivojenko.plugin.manage_scheduled_events.ui.panel;
+package com.kivojenko.plugin.manage_scheduled_events.ui.panel.cell;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.JBColor;

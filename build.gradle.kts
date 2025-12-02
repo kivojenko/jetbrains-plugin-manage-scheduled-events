@@ -25,6 +25,8 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
     implementation("com.cronutils:cron-utils:9.2.1")
+
+    implementation("net.javacrumbs.shedlock:shedlock-spring:7.2.0")
 }
 
 
@@ -45,7 +47,7 @@ tasks {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "231"
+            sinceBuild = "242"
         }
     }
 }

@@ -7,11 +7,9 @@ import com.intellij.openapi.application.ReadAction;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
-
-public class NavigateToEnabledAction extends AnAction {
-    public NavigateToEnabledAction(Supplier<String> text) {
-        super(text, AllIcons.Actions.MoveToWindow);
+public class NavigateToEnableSchedulingAction extends AnAction {
+    public NavigateToEnableSchedulingAction() {
+        super("Scheduling", "", AllIcons.Actions.MoveToWindow);
     }
 
     @Override

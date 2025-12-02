@@ -4,6 +4,11 @@ import com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.act
 
 public class SwitchGroupingButton extends ScheduledButton<SwitchGroupingAction> {
     public SwitchGroupingButton() {
-        super(new SwitchGroupingAction());
+        this(new SwitchGroupingAction());
+    }
+
+    public SwitchGroupingButton(SwitchGroupingAction action) {
+        super(action);
+        action.setSelected(null, false);
     }
 }

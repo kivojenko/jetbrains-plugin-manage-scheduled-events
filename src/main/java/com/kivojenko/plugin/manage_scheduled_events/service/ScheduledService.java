@@ -35,6 +35,21 @@ public record ScheduledService(Project project) {
     }
 
     @SneakyThrows
+    public Optional<PsiClass> findEnableShedLock() {
+        return ApplicationManager.getApplication()
+                .executeOnPooledThread(() -> ReadAction.compute(() -> JavaAnnotationIndex
+                        .getInstance()
+                        .getAnnotations("EnableSchedulerLock", project, GlobalSearchScope.projectScope(project))
+                        .stream()
+                        .map(ann -> (PsiModifierList) ann.getOwner())
+                        .filter(Objects::nonNull)
+                        .filter(owner -> owner.getParent() instanceof PsiClass)
+                        .map(owner -> (PsiClass) owner.getParent())
+                        .findAny()
+                )).get();
+    }
+
+    @SneakyThrows
     public List<MethodNode> findScheduledMethods() {
         return ApplicationManager.getApplication()
                 .executeOnPooledThread(() -> ReadAction.compute(() -> JavaAnnotationIndex

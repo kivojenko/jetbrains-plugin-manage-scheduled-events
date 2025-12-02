@@ -1,6 +1,7 @@
 package com.example.test.scheduled.week;
 
 import lombok.RequiredArgsConstructor;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ public class MondayService {
     }
 
     @Scheduled(cron = "0 0 1 * * *")
+    @SchedulerLock(name = "MondayService_itIsNotMondayLock")
     public void itIsNotMonday() {
         System.out.println("It is not Monday");
     }

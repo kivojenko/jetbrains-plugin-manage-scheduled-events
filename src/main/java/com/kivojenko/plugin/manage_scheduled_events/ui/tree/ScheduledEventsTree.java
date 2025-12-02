@@ -8,6 +8,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.kivojenko.plugin.manage_scheduled_events.service.ScheduledService;
+import com.kivojenko.plugin.manage_scheduled_events.service.ShedLockService;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.ComplexScheduledTreeNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.SimpleScheduledTreeNode;
@@ -21,21 +22,27 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Getter
 @Setter
 @Service(Service.Level.PROJECT)
 public final class ScheduledEventsTree extends SimpleTree {
+    private final Project project;
     private final ScheduledService scheduledService;
+    private final ShedLockService shedLockService;
 
     private Optional<PsiClass> enableScheduling = Optional.empty();
+    private Optional<PsiClass> enableShedLock = Optional.empty();
     private List<MethodNode> methods = new ArrayList<>();
     private boolean groupByPackage = false;
 
     public ScheduledEventsTree(Project project) {
         super();
-        this.scheduledService = project.getService(ScheduledService.class);
+        this.project = project;
+        scheduledService = project.getService(ScheduledService.class);
+        shedLockService = project.getService(ShedLockService.class);
 
         setEditable(true);
         setInvokesStopCellEditing(true);
@@ -57,10 +64,7 @@ public final class ScheduledEventsTree extends SimpleTree {
 
     private void navigateOnDoubleClick(MouseEvent e) {
         var path = getPathForLocation(e.getX(), e.getY());
-        if (path == null) return;
-
-        var nodeObj = path.getLastPathComponent();
-        if (!(nodeObj instanceof MethodNode node)) return;
+        if (path == null || !(path.getLastPathComponent() instanceof MethodNode node)) return;
 
         PsiMethod method = node.getMethod();
         if (method == null || !method.isValid() || !method.canNavigate()) return;
@@ -71,6 +75,7 @@ public final class ScheduledEventsTree extends SimpleTree {
     @SneakyThrows
     public void refreshList() {
         setEnableScheduling(scheduledService.findEnableScheduling());
+        setEnableShedLock(scheduledService.findEnableShedLock());
         setMethods(scheduledService.findScheduledMethods());
     }
 
@@ -98,11 +103,26 @@ public final class ScheduledEventsTree extends SimpleTree {
         for (int i = getRowCount() - 1; i >= 0; i--) collapseRow(i);
     }
 
+    public void lockAll() {
+        refreshList();
+        shedLockService.lockAll(methods);
+    }
+
+    public void unlockAll() {
+        refreshList();
+        shedLockService.unlockAll(methods);
+    }
+
     public static ScheduledEventsTree getInstance(@Nullable AnActionEvent event) {
         if (event == null || event.getProject() == null) {
             return ProjectManager.getInstance().getOpenProjects()[0].getService(ScheduledEventsTree.class);
         }
-
         return event.getProject().getService(ScheduledEventsTree.class);
+    }
+
+    public static ScheduledEventsTree getInstance(@Nullable Project project) {
+        return Objects.requireNonNullElseGet(project, () -> ProjectManager.getInstance().getOpenProjects()[0])
+                .getService(ScheduledEventsTree.class);
+
     }
 }
