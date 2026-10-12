@@ -35,6 +35,14 @@ public class NavToolPanel extends JBPanel<NavToolPanel> {
 
             add(rightPanel, BorderLayout.EAST);
 
+            Runnable updateShedLockVisibility = () -> {
+                rightPanel.setVisible(service.isShedLockFound());
+                revalidate();
+                repaint();
+            };
+            updateShedLockVisibility.run();
+            service.addRefreshListener(updateShedLockVisibility);
+
         });
     }
 }

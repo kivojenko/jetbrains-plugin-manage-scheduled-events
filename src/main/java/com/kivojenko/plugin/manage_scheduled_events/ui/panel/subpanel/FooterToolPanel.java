@@ -24,6 +24,14 @@ public class FooterToolPanel extends JBPanel<FooterToolPanel> {
 
             var schedulerLockButton = new EnableShedLockButton(new NavigateToEnableShedLockAction(), service);
             add(schedulerLockButton);
+
+            Runnable updateShedLockVisibility = () -> {
+                schedulerLockButton.setVisible(service.isShedLockFound());
+                revalidate();
+                repaint();
+            };
+            updateShedLockVisibility.run();
+            service.addRefreshListener(updateShedLockVisibility);
         });
 
     }

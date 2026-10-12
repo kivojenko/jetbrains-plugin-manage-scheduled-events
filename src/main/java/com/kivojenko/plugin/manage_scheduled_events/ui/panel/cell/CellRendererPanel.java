@@ -56,7 +56,8 @@ public class CellRendererPanel extends JBPanel<CellRendererPanel> {
                     color = JBColor.GRAY;
                 }
                 iconLabel.setIcon(IconUtil.colorize(icon, color));
-
+            } else {
+                iconLabel.setIcon(null);
             }
 
             descriptionLabel.setText(methodNode.getCronDescription());

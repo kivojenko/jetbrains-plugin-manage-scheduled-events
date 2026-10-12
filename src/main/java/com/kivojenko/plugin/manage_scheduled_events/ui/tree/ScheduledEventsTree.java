@@ -12,6 +12,7 @@ import com.kivojenko.plugin.manage_scheduled_events.service.ShedLockService;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.ComplexScheduledTreeNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.SimpleScheduledTreeNode;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -37,6 +38,9 @@ public final class ScheduledEventsTree extends SimpleTree {
     private Optional<PsiClass> enableShedLock = Optional.empty();
     private List<MethodNode> methods = new ArrayList<>();
     private boolean groupByPackage = false;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private final List<Runnable> refreshListeners = new ArrayList<>();
 
     public ScheduledEventsTree(Project project) {
         super();
@@ -77,6 +81,16 @@ public final class ScheduledEventsTree extends SimpleTree {
         setEnableScheduling(scheduledService.findEnableScheduling());
         setEnableShedLock(scheduledService.findEnableShedLock());
         setMethods(scheduledService.findScheduledMethods());
+        refreshListeners.forEach(Runnable::run);
+    }
+
+    /** Runs after every {@link #refreshList()}, e.g. to show or hide UI depending on what was found. */
+    public void addRefreshListener(Runnable listener) {
+        refreshListeners.add(listener);
+    }
+
+    public boolean isShedLockFound() {
+        return enableShedLock.isPresent();
     }
 
     public void setMethods(List<MethodNode> methods) {
