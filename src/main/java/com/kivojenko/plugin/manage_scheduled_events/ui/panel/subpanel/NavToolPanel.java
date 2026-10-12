@@ -27,6 +27,7 @@ public class NavToolPanel extends JBPanel<NavToolPanel> {
 
             var switchButton = new SwitchGroupingButton();
             leftPanel.add(switchButton);
+            leftPanel.add(new SwitchSortingButton());
 
             JBPanel<?> rightPanel = new JBPanel<>(new FlowLayout(FlowLayout.RIGHT, 8, 0));
 

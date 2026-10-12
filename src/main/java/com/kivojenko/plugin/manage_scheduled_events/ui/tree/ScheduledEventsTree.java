@@ -1,6 +1,7 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -11,6 +12,7 @@ import com.kivojenko.plugin.manage_scheduled_events.service.ScheduledService;
 import com.kivojenko.plugin.manage_scheduled_events.service.ShedLockService;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.ComplexScheduledTreeNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.FlatScheduledTreeNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree.SimpleScheduledTreeNode;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -37,7 +40,8 @@ public final class ScheduledEventsTree extends SimpleTree {
     private Optional<PsiClass> enableScheduling = Optional.empty();
     private Optional<PsiClass> enableShedLock = Optional.empty();
     private List<MethodNode> methods = new ArrayList<>();
-    private boolean groupByPackage = false;
+    private Grouping grouping = Grouping.CLASS;
+    private Sorting sorting = Sorting.NAME;
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private final List<Runnable> refreshListeners = new ArrayList<>();
@@ -71,7 +75,7 @@ public final class ScheduledEventsTree extends SimpleTree {
         if (path == null || !(path.getLastPathComponent() instanceof MethodNode node)) return;
 
         PsiMethod method = node.getMethod();
-        if (method == null || !method.isValid() || !method.canNavigate()) return;
+        if (method == null || !ReadAction.compute(() -> method.isValid() && method.canNavigate())) return;
 
         method.navigate(true);
     }
@@ -98,13 +102,23 @@ public final class ScheduledEventsTree extends SimpleTree {
         refreshTreeModel();
     }
 
-    public void setGroupByPackage(boolean groupByPackage) {
-        this.groupByPackage = groupByPackage;
+    public void setSorting(Sorting sorting) {
+        this.sorting = sorting;
+        refreshTreeModel();
+    }
+
+    public void setGrouping(Grouping grouping) {
+        this.grouping = grouping;
         refreshTreeModel();
     }
 
     public void refreshTreeModel() {
-        var node = groupByPackage ? new ComplexScheduledTreeNode(methods) : new SimpleScheduledTreeNode(methods);
+        var sorted = sorting.sort(methods, grouping);
+        DefaultMutableTreeNode node = switch (grouping) {
+            case CLASS -> new SimpleScheduledTreeNode(sorted);
+            case PACKAGE -> new ComplexScheduledTreeNode(sorted);
+            case NONE -> new FlatScheduledTreeNode(sorted);
+        };
         setModel(new DefaultTreeModel(node));
         expandAll();
     }

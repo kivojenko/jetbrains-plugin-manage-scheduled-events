@@ -1,17 +1,15 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.action;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.ToggleAction;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.Grouping;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.util.function.Supplier;
-
-public class SwitchGroupingAction extends ToggleAction {
+/** Cycles through {@link Grouping} modes; the icon shows the current mode, the tooltip names the next one. */
+public class SwitchGroupingAction extends AnAction {
 
     public SwitchGroupingAction() {
         super("Toggle Grouping", "Switch grouping mode", null);
@@ -23,18 +21,19 @@ public class SwitchGroupingAction extends ToggleAction {
     }
 
     @Override
-    public boolean isSelected(@NotNull AnActionEvent e) {
-        return ScheduledEventsTree.getInstance(e).isGroupByPackage();
-    }
-
-    private static Supplier<Icon> getIconSupplier(@Nullable AnActionEvent e) {
-        var state = ScheduledEventsTree.getInstance(e).isGroupByPackage();
-        return () -> state ? AllIcons.Actions.GroupByClass : AllIcons.Actions.GroupByPackage;
+    public void actionPerformed(@NotNull AnActionEvent e) {
+        var tree = ScheduledEventsTree.getInstance(e);
+        tree.setGrouping(tree.getGrouping().next());
+        updatePresentation(e.getPresentation(), tree.getGrouping());
     }
 
     @Override
-    public void setSelected(@Nullable AnActionEvent e, boolean state) {
-        ScheduledEventsTree.getInstance(e).setGroupByPackage(state);
-        getTemplatePresentation().setIconSupplier(getIconSupplier(e));
+    public void update(@NotNull AnActionEvent e) {
+        updatePresentation(e.getPresentation(), ScheduledEventsTree.getInstance(e).getGrouping());
+    }
+
+    public static void updatePresentation(Presentation presentation, Grouping grouping) {
+        presentation.setIcon(grouping.getIcon());
+        presentation.setText("Grouping: " + grouping.getLabel() + " (click for " + grouping.next().getLabel().toLowerCase() + ")");
     }
 }

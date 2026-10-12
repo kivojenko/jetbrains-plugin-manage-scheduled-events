@@ -4,6 +4,7 @@ import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -12,9 +13,12 @@ import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -124,6 +128,29 @@ public class MethodNode extends TypedNode {
             return true;
         } catch (IllegalArgumentException ignored) {
             return false;
+        }
+    }
+
+    /**
+     * Average time between the next few runs, so irregular crons (e.g. only on weekdays) still compare sensibly.
+     * Empty if the cron is invalid or never runs again.
+     */
+    public Optional<Duration> getAverageInterval() {
+        try {
+            var execution = ExecutionTime.forCron(parser.parse(getCron()));
+            var first = execution.nextExecution(ZonedDateTime.now());
+            if (first.isEmpty()) return Optional.empty();
+
+            var last = first.get();
+            int intervals = 0;
+            for (; intervals < 10; intervals++) {
+                var next = execution.nextExecution(last);
+                if (next.isEmpty()) break;
+                last = next.get();
+            }
+            return intervals == 0 ? Optional.empty() : Optional.of(Duration.between(first.get(), last).dividedBy(intervals));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
         }
     }
 
