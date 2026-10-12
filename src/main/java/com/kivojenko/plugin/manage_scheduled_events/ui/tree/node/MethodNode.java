@@ -25,10 +25,11 @@ public class MethodNode extends TypedNode {
 
     private static final String SHEDLOCK = "net.javacrumbs.shedlock.spring.annotation.SchedulerLock";
 
-    private final PsiMethod method;
-    private final PsiAnnotation annotation;
-    private final PsiAnnotation shedLockAnnotation;
+    private final SmartPsiElementPointer<PsiMethod> methodPointer;
+    private final SmartPsiElementPointer<PsiAnnotation> annotationPointer;
+    private final SmartPsiElementPointer<PsiAnnotation> shedLockPointer;
     private final boolean isShedLockEnabled;
+    private final String name;
 
     public static MethodNode createFromAnnotation(PsiAnnotation annotation) {
         if (annotation == null || !(annotation.getOwner() instanceof PsiModifierList psiModifierList)) {
@@ -56,14 +57,33 @@ public class MethodNode extends TypedNode {
     public MethodNode(PsiMethod method, PsiAnnotation annotation, PsiAnnotation shedLockAnnotation,
                       boolean isShedLockEnabled) {
         super(method.getName(), NodeType.METHOD);
-        this.method = method;
-        this.annotation = annotation;
-        this.shedLockAnnotation = shedLockAnnotation;
+        var pointerManager = SmartPointerManager.getInstance(method.getProject());
+        this.methodPointer = pointerManager.createSmartPsiElementPointer(method);
+        this.annotationPointer = pointerManager.createSmartPsiElementPointer(annotation);
+        this.shedLockPointer = shedLockAnnotation == null
+                ? null
+                : pointerManager.createSmartPsiElementPointer(shedLockAnnotation);
         this.isShedLockEnabled = isShedLockEnabled;
+        this.name = method.getName();
+    }
+
+    /** PSI elements can be invalidated by edits or reparsing, so they are always resolved through pointers. */
+    public PsiMethod getMethod() {
+        return ReadAction.compute(methodPointer::getElement);
+    }
+
+    public PsiAnnotation getAnnotation() {
+        return ReadAction.compute(annotationPointer::getElement);
+    }
+
+    public PsiAnnotation getShedLockAnnotation() {
+        return shedLockPointer == null ? null : ReadAction.compute(shedLockPointer::getElement);
     }
 
     public String getCron() {
         return ReadAction.compute(() -> {
+            var annotation = annotationPointer.getElement();
+            if (annotation == null) return "<no cron>";
             var cron = annotation.findAttributeValue("cron");
             if (cron instanceof PsiLiteralExpression literal) {
                 return (String) literal.getValue();
@@ -72,22 +92,29 @@ public class MethodNode extends TypedNode {
         });
     }
 
-    public void setCron(String newCron) {
-        if (Objects.equals(newCron, getCron())) return;
-        updatePsiCron(newCron);
+    /**
+     * @return {@code false} if the cron could not be written, e.g. the annotation was removed or has no
+     * {@code cron} attribute since this node was created.
+     */
+    public boolean setCron(String newCron) {
+        if (Objects.equals(newCron, getCron())) return true;
+        return updatePsiCron(newCron);
     }
 
-    private void updatePsiCron(String newCron) {
-        var project = method.getProject();
+    private boolean updatePsiCron(String newCron) {
+        var project = methodPointer.getProject();
 
-        WriteCommandAction.runWriteCommandAction(project, () -> {
+        return WriteCommandAction.writeCommandAction(project).compute(() -> {
+            var annotation = annotationPointer.getElement();
+            if (annotation == null) return false;
             var value = annotation.findAttributeValue("cron");
 
-            if (value == null) return;
+            if (value == null) return false;
             var cron = "\"" + newCron + "\"";
 
             var element = JavaPsiFacade.getElementFactory(project).createExpressionFromText(cron, value);
             value.replace(element);
+            return true;
         });
     }
 
@@ -109,14 +136,21 @@ public class MethodNode extends TypedNode {
     }
 
     public String getFilePath() {
-        return ((PsiJavaFile) method.getContainingFile()).getPackageName();
+        return ReadAction.compute(() -> {
+            var method = methodPointer.getElement();
+            return method != null && method.getContainingFile() instanceof PsiJavaFile file ? file.getPackageName() : "";
+        });
     }
 
     public String getClassName() {
-        return ReadAction.compute(() -> method.getContainingClass() != null ? method.getContainingClass().getName() : "");
+        return ReadAction.compute(() -> {
+            var method = methodPointer.getElement();
+            var cls = method == null ? null : method.getContainingClass();
+            return cls != null && cls.getName() != null ? cls.getName() : "";
+        });
     }
 
     public String getName() {
-        return method.getName();
+        return name;
     }
 }

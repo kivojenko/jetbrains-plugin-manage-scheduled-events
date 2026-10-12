@@ -50,7 +50,9 @@ public final class ShedLockService {
     private void addShedLockAnnotation(MethodNode method) {
         if (method.getShedLockAnnotation() != null || lockClass == null) return;
 
-        var context = method.getAnnotation().getContext();
+        var annotation = method.getAnnotation();
+        if (annotation == null) return;
+        var context = annotation.getContext();
         if (context == null || !(context.getContainingFile() instanceof PsiJavaFile file)) return;
 
         if (file.findImportReferenceTo(lockClass) == null) {
@@ -60,7 +62,7 @@ public final class ShedLockService {
         String lock = "@SchedulerLock(name = \"" + method.getClassName() + "_" + method.getName() + "Lock\")";
         PsiAnnotation element = psiParserFacade.createAnnotationFromText(lock, context);
 
-        context.addAfter(element, method.getAnnotation());
+        context.addAfter(element, annotation);
     }
 
 
@@ -69,14 +71,16 @@ public final class ShedLockService {
     }
 
     public void removeShedLockAnnotation(MethodNode method) {
-        if (method.getShedLockAnnotation() != null) {
-            method.getShedLockAnnotation().delete();
+        var shedLock = method.getShedLockAnnotation();
+        if (shedLock != null) {
+            shedLock.delete();
             removeImports(method);
         }
     }
 
     public void removeImports(MethodNode method) {
-        if (method.getAnnotation().getContainingFile() instanceof PsiJavaFile file) {
+        var annotation = method.getAnnotation();
+        if (annotation != null && annotation.getContainingFile() instanceof PsiJavaFile file) {
             styleManager.removeRedundantImports(file);
         }
     }

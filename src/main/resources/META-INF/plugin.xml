@@ -42,5 +42,6 @@
                     anchor="right"
                     icon="com.intellij.java.ultimate.icons.JavaUltimateIcons.Cdi.Gutter.ScheduledEventRun"
         />
+        <notificationGroup id="Scheduled Events" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>

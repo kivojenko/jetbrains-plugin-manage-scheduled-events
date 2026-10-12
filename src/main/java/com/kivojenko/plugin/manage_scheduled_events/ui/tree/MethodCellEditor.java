@@ -1,5 +1,7 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree;
 
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.kivojenko.plugin.manage_scheduled_events.ui.panel.cell.CellEditorPanel;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
 
@@ -34,7 +36,21 @@ public class MethodCellEditor extends AbstractCellEditor implements TreeCellEdit
     @Override
     public Object getCellEditorValue() {
         String newCron = panel.getText();
-        currentNode.setCron(newCron);
+        if (!currentNode.setCron(newCron)) {
+            notifyCronNotSaved(currentNode);
+        }
         return currentNode;
+    }
+
+    private static void notifyCronNotSaved(MethodNode node) {
+        var project = node.getMethodPointer().getProject();
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("Scheduled Events")
+                .createNotification("Cron not saved for " + node.getClassName() + "." + node.getName()
+                        + ": the @Scheduled annotation changed or has no cron attribute. List was refreshed.",
+                        NotificationType.WARNING)
+                .notify(project);
+        // Defer so the tree finishes stopping the edit before its model is replaced.
+        SwingUtilities.invokeLater(() -> ScheduledEventsTree.getInstance(project).refreshList());
     }
 }
