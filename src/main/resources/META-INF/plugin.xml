@@ -5,14 +5,26 @@
     <vendor email="kivojenko@gmail.com">Ksenija Kivojenko</vendor>
 
     <description><![CDATA[
-        <p>An IntelliJ Platform plugin that discovers and lists methods annotated with <code>@Scheduled</code> in Java/Spring projects.</p>
-        <p>It provides a "Scheduled Events" tool window to browse events, view cron expressions, and navigate to source, with:</p>
+        <p>See every scheduled job in your Java/Spring project in one place: Spring <code>@Scheduled</code> methods and
+           Quartz jobs, with their crons explained in plain English.</p>
+        <p>The "Scheduled Events" tool window lets you browse jobs, check and edit their crons, and jump to source:</p>
         <ul>
-            <li>Search</li>
-            <li>Grouping by package or by class</li>
-            <li>Direct Cron validation and update</li>
-            <li>Optional ShedLock helpers: add/remove <code>@SchedulerLock</code> to all listed methods when ShedLock is present</li>
+            <li>Spring <code>@Scheduled</code> methods and Quartz jobs (<code>Job</code> / <code>QuartzJobBean</code>)
+                with their cron triggers</li>
+            <li>Crons described in words and validated, using Spring or Quartz rules as appropriate</li>
+            <li>Edit a cron in place: it is written back to the code or config file it comes from</li>
+            <li>Crons read from <code>application.yml</code> / <code>.properties</code> through <code>${...}</code>
+                placeholders, <code>@Value</code> or <code>@ConfigurationProperties</code>, with profile overrides
+                shown</li>
+            <li>Grouping by class, by package, or a flat list of jobs</li>
+            <li>Sorting by name or by how often jobs run</li>
+            <li>Optional ShedLock helpers: add/remove <code>@SchedulerLock</code> on all <code>@Scheduled</code>
+                methods when ShedLock is present</li>
         </ul>
+
+        <p>Quartz triggers are found where a cron is passed to <code>CronScheduleBuilder.cronSchedule(...)</code>,
+           <code>CronTriggerFactoryBean.setCronExpression(...)</code> or <code>CronTriggerImpl.setCronExpression(...)</code>,
+           and matched to their job through the <code>JobDetail</code> they are built with.</p>
 
         <p>ShedLock ensures that scheduled tasks run on a single node in clustered environments. When enabled, this plugin can add
            <code>@SchedulerLock(name = "ClassName_methodNameLock")</code> right after <code>@Scheduled</code>, and will manage imports for
@@ -25,6 +37,36 @@
     <change-notes>
         <![CDATA[
         <ul>
+            <li>1.1.0:
+                <ul>
+                    <li>Quartz support: lists <code>Job</code> / <code>QuartzJobBean</code> classes with their cron
+                        triggers, validated and described with Quartz cron rules (year field, <code>L</code>,
+                        <code>W</code>, <code>#</code>)</li>
+                    <li>Crons from <code>application.yml</code> / <code>.properties</code>: <code>${...}</code>
+                        placeholders in <code>@Scheduled</code>, <code>@Value</code> and
+                        <code>@ConfigurationProperties</code> getters are resolved, including
+                        <code>${key:default}</code> and profile overrides</li>
+                    <li>Editing a cron that comes from a config file updates the config file</li>
+                    <li>Crons from constants are now shown, e.g. <code>@Scheduled(cron = DAILY)</code></li>
+                    <li><code>@Scheduled(fixedRate/fixedDelay)</code> methods show "&lt;no cron&gt;" instead of an
+                        empty cron</li>
+                    <li>Quartz jobs scheduled at runtime, e.g. with crons kept in the application's own table, can be
+                        loaded from Quartz's <code>QRTZ_</code> tables through a data source in the Database tool
+                        window (IntelliJ IDEA Ultimate), read-only, with trigger state and next fire time</li>
+                    <li>Quartz triggers built in helper methods are matched to their job through the methods that call
+                        them, and crons passed in as arguments are followed to where they come from</li>
+                    <li>Now requires the bundled YAML and Properties plugins</li>
+                </ul>
+            </li>
+            <li>1.0.1:
+                <ul>
+                    <li>Sorting: switch between sorting by name and by frequency (most often running jobs first)</li>
+                    <li>New "Jobs only" grouping that shows a flat list of scheduled methods</li>
+                    <li>ShedLock actions are hidden when ShedLock is not on the classpath</li>
+                    <li>Fixed a crash when a scheduled method was edited or removed while listed; a warning is now
+                        shown if a cron change can't be saved</li>
+                </ul>
+            </li>
             <li>1.0.0: Initial release (browse and navigate <code>@Scheduled</code> methods; search; grouping; expand/collapse) ShedLock support (toolbar actions to add/remove <code>@SchedulerLock</code>; quick navigation to enable ShedLock)</li>
         </ul>
         ]]>
@@ -35,6 +77,9 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.java</depends>
+    <depends>com.intellij.properties</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
+    <depends optional="true" config-file="with-database.xml">com.intellij.database</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Scheduled Events"

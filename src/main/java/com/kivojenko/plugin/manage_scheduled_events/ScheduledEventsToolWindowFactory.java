@@ -13,7 +13,8 @@ public class ScheduledEventsToolWindowFactory implements ToolWindowFactory {
         var panel = new ScheduledEventPanel(project);
 
         var factory = ContentFactory.getInstance();
-        var content = factory.createContent(panel, "Scheduled Events", false);
+        // No tab name: the tool window title already says "Scheduled Events"
+        var content = factory.createContent(panel, "", false);
 
         toolWindow.getContentManager().addContent(content);
     }

@@ -1,31 +1,23 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
-import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
 
+/** A Spring {@code @Scheduled} method. */
 @Getter
 @Setter
-public class MethodNode extends TypedNode {
-    private static CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
-    private static CronDefinition definition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING);
-    private static CronParser parser = new CronParser(definition);
+public class MethodNode extends JobNode {
+    private static final CronParser parser =
+            new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING));
 
     private static final String SHEDLOCK = "net.javacrumbs.shedlock.spring.annotation.SchedulerLock";
 
@@ -60,7 +52,7 @@ public class MethodNode extends TypedNode {
 
     public MethodNode(PsiMethod method, PsiAnnotation annotation, PsiAnnotation shedLockAnnotation,
                       boolean isShedLockEnabled) {
-        super(method.getName(), NodeType.METHOD);
+        super(method.getName());
         var pointerManager = SmartPointerManager.getInstance(method.getProject());
         this.methodPointer = pointerManager.createSmartPsiElementPointer(method);
         this.annotationPointer = pointerManager.createSmartPsiElementPointer(annotation);
@@ -84,84 +76,36 @@ public class MethodNode extends TypedNode {
         return shedLockPointer == null ? null : ReadAction.compute(shedLockPointer::getElement);
     }
 
-    public String getCron() {
+    @Override
+    public Project getProject() {
+        return methodPointer.getProject();
+    }
+
+    @Override
+    public PsiElement getNavigationTarget() {
+        return getMethod();
+    }
+
+    @Override
+    protected CronParser getParser() {
+        return parser;
+    }
+
+    /** Declared only, so {@code fixedRate} tasks show no cron rather than the attribute's empty default. */
+    @Override
+    protected PsiElement getCronElement() {
         return ReadAction.compute(() -> {
             var annotation = annotationPointer.getElement();
-            if (annotation == null) return "<no cron>";
-            var cron = annotation.findAttributeValue("cron");
-            if (cron instanceof PsiLiteralExpression literal) {
-                return (String) literal.getValue();
-            }
-            return "<no cron>";
+            return annotation == null ? null : annotation.findDeclaredAttributeValue("cron");
         });
     }
 
-    /**
-     * @return {@code false} if the cron could not be written, e.g. the annotation was removed or has no
-     * {@code cron} attribute since this node was created.
-     */
-    public boolean setCron(String newCron) {
-        if (Objects.equals(newCron, getCron())) return true;
-        return updatePsiCron(newCron);
+    @Override
+    protected boolean resolvesPlaceholders() {
+        return true;
     }
 
-    private boolean updatePsiCron(String newCron) {
-        var project = methodPointer.getProject();
-
-        return WriteCommandAction.writeCommandAction(project).compute(() -> {
-            var annotation = annotationPointer.getElement();
-            if (annotation == null) return false;
-            var value = annotation.findAttributeValue("cron");
-
-            if (value == null) return false;
-            var cron = "\"" + newCron + "\"";
-
-            var element = JavaPsiFacade.getElementFactory(project).createExpressionFromText(cron, value);
-            value.replace(element);
-            return true;
-        });
-    }
-
-    public boolean isValid() {
-        try {
-            parser.parse(getCron());
-            return true;
-        } catch (IllegalArgumentException ignored) {
-            return false;
-        }
-    }
-
-    /**
-     * Average time between the next few runs, so irregular crons (e.g. only on weekdays) still compare sensibly.
-     * Empty if the cron is invalid or never runs again.
-     */
-    public Optional<Duration> getAverageInterval() {
-        try {
-            var execution = ExecutionTime.forCron(parser.parse(getCron()));
-            var first = execution.nextExecution(ZonedDateTime.now());
-            if (first.isEmpty()) return Optional.empty();
-
-            var last = first.get();
-            int intervals = 0;
-            for (; intervals < 10; intervals++) {
-                var next = execution.nextExecution(last);
-                if (next.isEmpty()) break;
-                last = next.get();
-            }
-            return intervals == 0 ? Optional.empty() : Optional.of(Duration.between(first.get(), last).dividedBy(intervals));
-        } catch (IllegalArgumentException e) {
-            return Optional.empty();
-        }
-    }
-
-    public String getCronDescription() {
-        try {
-            return descriptor.describe(parser.parse(getCron()));
-        } catch (IllegalArgumentException e) {
-            return e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-        }
-    }
-
+    @Override
     public String getFilePath() {
         return ReadAction.compute(() -> {
             var method = methodPointer.getElement();
@@ -169,6 +113,7 @@ public class MethodNode extends TypedNode {
         });
     }
 
+    @Override
     public String getClassName() {
         return ReadAction.compute(() -> {
             var method = methodPointer.getElement();
@@ -177,6 +122,7 @@ public class MethodNode extends TypedNode {
         });
     }
 
+    @Override
     public String getName() {
         return name;
     }

@@ -5,7 +5,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBTextField;
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.JobNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +20,7 @@ public class CellEditorPanel extends JBPanel<CellEditorPanel> {
 
         nameLabel.setIcon(AllIcons.Nodes.Method);
         descriptionLabel.setForeground(JBColor.GRAY);
+        descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         add(nameLabel, BorderLayout.WEST);
         add(descriptionLabel, BorderLayout.CENTER);
@@ -27,10 +28,10 @@ public class CellEditorPanel extends JBPanel<CellEditorPanel> {
         setBackground(UIManager.getColor("Tree.selectionBackground"));
     }
 
-    public void setNode(MethodNode methodNode) {
+    public void setNode(JobNode methodNode) {
         nameLabel.setText(methodNode.getName());
-        descriptionLabel.setText(methodNode.getCronDescription());
-        descriptionLabel.setForeground(methodNode.isValid() ? JBColor.GRAY : JBColor.RED);
+        descriptionLabel.setText(CellRendererPanel.describe(methodNode));
+        descriptionLabel.setForeground(methodNode.isBroken() ? JBColor.RED : JBColor.GRAY);
         cronField.setText(methodNode.getCron());
     }
 

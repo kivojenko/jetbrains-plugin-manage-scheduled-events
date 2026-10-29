@@ -3,10 +3,13 @@ package com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBPanel;
+import com.kivojenko.plugin.manage_scheduled_events.service.QuartzDatabase;
 import com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.*;
 import com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.action.LockAllAction;
 import com.kivojenko.plugin.manage_scheduled_events.ui.panel.subpanel.button.action.UnlockAllAction;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.QuartzDbJobNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.QuartzJobNode;
 
 import java.awt.*;
 
@@ -28,6 +31,16 @@ public class NavToolPanel extends JBPanel<NavToolPanel> {
             var switchButton = new SwitchGroupingButton();
             leftPanel.add(switchButton);
             leftPanel.add(new SwitchSortingButton());
+
+            // Only with the Database plugin, and only for projects using Quartz
+            if (QuartzDatabase.getInstance(project) != null) {
+                var loadFromDatabaseButton = new LoadQuartzFromDatabaseButton();
+                leftPanel.add(loadFromDatabaseButton);
+                Runnable updateDatabaseVisibility = () -> loadFromDatabaseButton.setVisible(service.getMethods().stream()
+                        .anyMatch(job -> job instanceof QuartzJobNode || job instanceof QuartzDbJobNode));
+                updateDatabaseVisibility.run();
+                service.addRefreshListener(updateDatabaseVisibility);
+            }
 
             JBPanel<?> rightPanel = new JBPanel<>(new FlowLayout(FlowLayout.RIGHT, 8, 0));
 

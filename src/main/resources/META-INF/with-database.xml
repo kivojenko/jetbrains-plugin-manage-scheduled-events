@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceInterface="com.kivojenko.plugin.manage_scheduled_events.service.QuartzDatabase"
+                        serviceImplementation="com.kivojenko.plugin.manage_scheduled_events.service.database.QuartzDatabaseImpl"/>
+    </extensions>
+</idea-plugin>

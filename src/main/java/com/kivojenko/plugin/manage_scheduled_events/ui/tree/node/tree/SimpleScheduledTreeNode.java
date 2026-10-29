@@ -1,6 +1,6 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree;
 
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.JobNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.NodeType;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.TypedNode;
 
@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SimpleScheduledTreeNode extends DefaultMutableTreeNode {
-    public SimpleScheduledTreeNode(List<MethodNode> methods) {
+    public SimpleScheduledTreeNode(List<JobNode> methods) {
         super("root");
 
         methods
                 .stream()
-                .collect(Collectors.groupingBy(MethodNode::getClassName, LinkedHashMap::new, Collectors.toList()))
+                .collect(Collectors.groupingBy(JobNode::getClassName, LinkedHashMap::new, Collectors.toList()))
                 .forEach((path, pathMethods) -> {
                     var classNode = new TypedNode(path, NodeType.CLASS);
                     add(classNode);

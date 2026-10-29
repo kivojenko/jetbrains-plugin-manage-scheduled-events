@@ -6,3 +6,18 @@ spring:
     driverClassName: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+
+jobs:
+  backup:
+    cron: "0 0 3 * * *"
+  report:
+    cron: "0 0/15 9-17 ? * MON-FRI"
+  archive-cron: "0 0 4 ? * SUN"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: staging
+
+jobs.backup.cron: "0 0 * * * *"

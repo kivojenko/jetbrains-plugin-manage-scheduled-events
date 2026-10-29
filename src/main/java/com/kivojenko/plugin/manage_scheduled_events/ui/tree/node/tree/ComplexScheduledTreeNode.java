@@ -1,6 +1,6 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.tree;
 
-import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
+import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.JobNode;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.NodeType;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.TypedNode;
 
@@ -9,18 +9,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ComplexScheduledTreeNode extends TypedNode {
-    public ComplexScheduledTreeNode(List<MethodNode> methods) {
+    public ComplexScheduledTreeNode(List<JobNode> methods) {
         super("root", NodeType.FOLDER);
 
         methods
                 .stream()
-                .collect(Collectors.groupingBy(MethodNode::getFilePath, LinkedHashMap::new, Collectors.toList()))
+                .collect(Collectors.groupingBy(JobNode::getFilePath, LinkedHashMap::new, Collectors.toList()))
                 .forEach((path, pathMethods) -> {
                     TypedNode parent = findPath(path);
                     pathMethods
                             .stream()
                             .collect(Collectors.groupingBy(
-                                    MethodNode::getClassName,
+                                    JobNode::getClassName,
                                     LinkedHashMap::new,
                                     Collectors.toList()))
                             .forEach((className, classMethods) -> {

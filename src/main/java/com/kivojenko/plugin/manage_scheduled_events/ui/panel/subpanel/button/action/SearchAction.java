@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SearchAction extends AnAction {
     public SearchAction() {
-        super("Refresh", "Scan project for @Scheduled methods", AllIcons.Actions.Refresh);
+        super("Refresh", "Scan project for @Scheduled methods and Quartz jobs", AllIcons.Actions.Refresh);
     }
 
     @Override
