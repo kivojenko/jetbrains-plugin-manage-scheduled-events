@@ -19,7 +19,7 @@ public class MethodNode extends JobNode {
     private static final CronParser parser =
             new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING));
 
-    private static final String SHEDLOCK = "net.javacrumbs.shedlock.spring.annotation.SchedulerLock";
+    public static final String SHEDLOCK ="net.javacrumbs.shedlock.spring.annotation.SchedulerLock";
 
     private final SmartPsiElementPointer<PsiMethod> methodPointer;
     private final SmartPsiElementPointer<PsiAnnotation> annotationPointer;

@@ -14,7 +14,6 @@ import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.impl.PsiJavaParserFacadeImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.node.MethodNode;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 import java.util.List;
 
@@ -36,8 +35,7 @@ public final class ShedLockService {
                 ApplicationManager.getApplication()
                         .executeOnPooledThread(() -> {
                             var psiFacade = JavaPsiFacade.getInstance(project);
-                            var name = SchedulerLock.class.getCanonicalName();
-                            lockClass = ReadAction.compute(() -> psiFacade.findClass(name,
+                            lockClass = ReadAction.compute(() -> psiFacade.findClass(MethodNode.SHEDLOCK,
                                     GlobalSearchScope.allScope(project)));
                         })
         );
