@@ -1,11 +1,9 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.kivojenko.plugin.manage_scheduled_events.cron.CronExpression;
 import com.kivojenko.plugin.manage_scheduled_events.ui.tree.ScheduledEventsTree;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +14,6 @@ import java.util.Arrays;
 @Getter
 @Setter
 public class MethodNode extends JobNode {
-    private static final CronParser parser =
-            new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING));
-
     public static final String SHEDLOCK ="net.javacrumbs.shedlock.spring.annotation.SchedulerLock";
 
     private final SmartPsiElementPointer<PsiMethod> methodPointer;
@@ -87,8 +82,8 @@ public class MethodNode extends JobNode {
     }
 
     @Override
-    protected CronParser getParser() {
-        return parser;
+    protected CronExpression.Flavor getCronFlavor() {
+        return CronExpression.Flavor.SPRING;
     }
 
     /** Declared only, so {@code fixedRate} tasks show no cron rather than the attribute's empty default. */

@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Objects;
@@ -160,12 +161,13 @@ public final class CronResolver {
             return null;
         }
 
-        PsiCall onlyCall = null;
-        for (var reference : MethodReferencesSearch.search(method, method.getUseScope(), true)) {
-            if (onlyCall != null || !(reference.getElement().getParent() instanceof PsiCall call)) return null;
-            onlyCall = call;
-        }
-        if (onlyCall == null || onlyCall.getArgumentList() == null) return null;
+        // Stops at the second call, so methods called from many places aren't searched to the end
+        var calls = new ArrayList<PsiCall>();
+        var single = MethodReferencesSearch.search(method, method.getUseScope(), true).forEach(reference ->
+                reference.getElement().getParent() instanceof PsiCall call && calls.add(call) && calls.size() == 1);
+        if (!single || calls.size() != 1) return null;
+        var onlyCall = calls.getFirst();
+        if (onlyCall.getArgumentList() == null) return null;
 
         var arguments = onlyCall.getArgumentList().getExpressions();
         return index < arguments.length ? arguments[index] : null;

@@ -1,6 +1,5 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
-import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -8,8 +7,10 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
+import com.kivojenko.plugin.manage_scheduled_events.cron.CronExpression;
 import com.kivojenko.plugin.manage_scheduled_events.service.CronValue;
 import com.kivojenko.plugin.manage_scheduled_events.service.QuartzTrigger;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -27,6 +28,7 @@ public class QuartzDbJobNode extends JobNode {
     private static final DateTimeFormatter NEXT_FIRE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final Project project;
+    @Getter
     private final QuartzTrigger trigger;
     private final @Nullable SmartPsiElementPointer<PsiClass> jobPointer;
 
@@ -36,10 +38,6 @@ public class QuartzDbJobNode extends JobNode {
         this.project = project;
         this.trigger = trigger;
         this.jobPointer = job == null ? null : SmartPointerManager.getInstance(project).createSmartPsiElementPointer(job);
-    }
-
-    public QuartzTrigger getTrigger() {
-        return trigger;
     }
 
     @Override
@@ -84,8 +82,8 @@ public class QuartzDbJobNode extends JobNode {
     }
 
     @Override
-    protected CronParser getParser() {
-        return QuartzJobNode.parser;
+    protected CronExpression.Flavor getCronFlavor() {
+        return CronExpression.Flavor.QUARTZ;
     }
 
     @Override

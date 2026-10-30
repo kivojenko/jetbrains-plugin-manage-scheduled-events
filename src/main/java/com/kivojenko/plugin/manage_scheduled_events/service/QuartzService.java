@@ -175,7 +175,7 @@ public record QuartzService(Project project) {
             Set<PsiClass> found = new HashSet<>();
             List<PsiMethod> next = new ArrayList<>();
             for (var callee : level) {
-                for (var reference : MethodReferencesSearch.search(callee, callee.getUseScope(), true)) {
+                for (var reference : MethodReferencesSearch.search(callee, callee.getUseScope(), true).findAll()) {
                     var caller = PsiTreeUtil.getParentOfType(reference.getElement(), PsiMethod.class);
                     if (caller == null || !visited.add(caller)) continue;
 

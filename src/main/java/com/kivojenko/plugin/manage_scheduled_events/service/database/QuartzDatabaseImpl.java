@@ -31,7 +31,7 @@ public final class QuartzDatabaseImpl implements QuartzDatabase {
     public List<Source> findSources() {
         List<Source> sources = new ArrayList<>();
         for (var dataSource : DbPsiFacade.getInstance(project).getDataSources()) {
-            if (!(dataSource.getDelegate() instanceof LocalDataSource local)) continue;
+            if (!(dataSource.getDelegateDataSource() instanceof LocalDataSource local)) continue;
 
             // Table names by schema, to find the Quartz tables side by side; lower-cased as databases differ in case
             Map<DasObject, Set<String>> tablesBySchema = new HashMap<>();
@@ -64,12 +64,11 @@ public final class QuartzDatabaseImpl implements QuartzDatabase {
         var dataSource = findDataSource(source.id());
         if (dataSource == null) throw new IllegalStateException("Data source " + source.name() + " no longer exists");
 
-        var ref = DatabaseConnectionManager.getInstance()
+        try (var ref = DatabaseConnectionManager.getInstance()
                 .build(project, dataSource)
                 .setRequestor(new ConnectionRequestor.Anonymous())
                 .setAskPassword(true)
-                .createBlocking();
-        try {
+                .createBlocking()) {
             var statement = ref.get().getRemoteConnection().createStatement();
             try {
                 var resultSet = statement.executeQuery(query(source));
@@ -83,14 +82,12 @@ public final class QuartzDatabaseImpl implements QuartzDatabase {
             } finally {
                 statement.close();
             }
-        } finally {
-            ref.close();
         }
     }
 
     private @Nullable LocalDataSource findDataSource(String id) {
         for (var dataSource : DbPsiFacade.getInstance(project).getDataSources()) {
-            if (dataSource.getDelegate() instanceof LocalDataSource local && id.equals(local.getUniqueId())) {
+            if (dataSource.getDelegateDataSource() instanceof LocalDataSource local && id.equals(local.getUniqueId())) {
                 return local;
             }
         }

@@ -1,12 +1,10 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.kivojenko.plugin.manage_scheduled_events.cron.CronExpression;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -16,9 +14,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class QuartzJobNode extends JobNode {
     public static final String NO_TRIGGER = "(no cron trigger)";
-
-    static final CronParser parser =
-            new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
 
     private final Project project;
     private final @Nullable SmartPsiElementPointer<PsiClass> jobPointer;
@@ -82,8 +77,8 @@ public class QuartzJobNode extends JobNode {
     }
 
     @Override
-    protected CronParser getParser() {
-        return parser;
+    protected CronExpression.Flavor getCronFlavor() {
+        return CronExpression.Flavor.QUARTZ;
     }
 
     @Override

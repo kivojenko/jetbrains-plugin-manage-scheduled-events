@@ -1,8 +1,5 @@
 package com.kivojenko.plugin.manage_scheduled_events.ui.tree.node;
 
-import com.cronutils.descriptor.CronDescriptor;
-import com.cronutils.model.time.ExecutionTime;
-import com.cronutils.parser.CronParser;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -10,13 +7,13 @@ import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.kivojenko.plugin.manage_scheduled_events.cron.CronExpression;
 import com.kivojenko.plugin.manage_scheduled_events.service.CronResolver;
 import com.kivojenko.plugin.manage_scheduled_events.service.CronValue;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -24,8 +21,6 @@ import java.util.function.Consumer;
 /** A scheduled job shown in the tree: a Spring {@code @Scheduled} method or a Quartz job trigger. */
 public abstract class JobNode extends TypedNode {
     public static final String NO_CRON = CronResolver.NO_CRON;
-
-    private static final CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
 
     private volatile @Nullable CronValue cronValue;
 
@@ -51,7 +46,11 @@ public abstract class JobNode extends TypedNode {
     protected abstract boolean resolvesPlaceholders();
 
     /** Spring and Quartz crons differ, e.g. Quartz allows a year field. */
-    protected abstract CronParser getParser();
+    protected abstract CronExpression.Flavor getCronFlavor();
+
+    private CronExpression parseCron() {
+        return CronExpression.parse(getCron(), getCronFlavor());
+    }
 
     /**
      * Resolves the cron again from source and config files. Uses indexes, so it must run in a background read action;
@@ -133,7 +132,7 @@ public abstract class JobNode extends TypedNode {
     public boolean isValid() {
         if (getCronValue().problem() != null) return false;
         try {
-            getParser().parse(getCron());
+            parseCron();
             return true;
         } catch (IllegalArgumentException ignored) {
             return false;
@@ -146,7 +145,7 @@ public abstract class JobNode extends TypedNode {
      */
     public Optional<Duration> getAverageInterval() {
         try {
-            var execution = ExecutionTime.forCron(getParser().parse(getCron()));
+            var execution = parseCron();
             var first = execution.nextExecution(ZonedDateTime.now());
             if (first.isEmpty()) return Optional.empty();
 
@@ -172,9 +171,9 @@ public abstract class JobNode extends TypedNode {
             return source != null ? "Set at runtime from " + source : "No cron schedule";
         }
         try {
-            return descriptor.describe(getParser().parse(getCron()));
+            return parseCron().describe();
         } catch (IllegalArgumentException e) {
-            return e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            return e.getMessage();
         }
     }
 }
